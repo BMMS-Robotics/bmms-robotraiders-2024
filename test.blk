@@ -23,7 +23,7 @@
 </value>
 <statement name="DO">
 <block type="comment" id="Jh/;L$n@JuX8AQJDFCul">
-<field name="COMMENT">Put loop blocks here.</field>
+<field name="COMMENT">Put loop blocks here please.</field>
 <next>
 <block type="telemetry_update" id="exvivmft-pX$n!1,8Ea$"/>
 </next>
