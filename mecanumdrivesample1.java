@@ -9,10 +9,10 @@ import org.firstinspires.ftc.robotcore.external.JavaUtil;
 @TeleOp(name = "mecanumdrivesample1 (Blocks to Java)")
 public class mecanumdrivesample1 extends LinearOpMode {
 
-  private DcMotor frontRight;
-  private DcMotor backRight;
-  private DcMotor frontLeft;
-  private DcMotor backLeft;
+  private DcMotor frontright;
+  private DcMotor backright;
+  private DcMotor frontleft;
+  private DcMotor backleft;
 
   /**
    * This function is executed when this Op Mode is selected from the Driver Station.
