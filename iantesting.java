@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name = "ianopmode (Blocks to Java)")
-public class ianopmode extends LinearOpMode {
+public class iantesting extends LinearOpMode {
 
   /**
    * This function is executed when this OpMode is selected from the Driver Station.

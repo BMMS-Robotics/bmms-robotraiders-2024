@@ -5,9 +5,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 @TeleOp(name = "DanTesting (Blocks to Java)")
-public class DanTesting extends LinearOpMode {
+public class dantesting extends LinearOpMode {
 
-  private DcMotor back_leftAsDcMotor;
+  private DcMotor frontright;
 
   /**
    * This function is executed when this OpMode is selected from the Driver Station.
@@ -16,7 +16,7 @@ public class DanTesting extends LinearOpMode {
   public void runOpMode() {
     double i;
 
-    back_leftAsDcMotor = hardwareMap.get(DcMotor.class, "back_leftAsDcMotor");
+    frontright = hardwareMap.get(DcMotor.class, "frontright");
 
     // Put initialization blocks here.
     waitForStart();
@@ -26,7 +26,7 @@ public class DanTesting extends LinearOpMode {
         // Put loop blocks here.
         telemetry.update();
         for (i = -1; i <= 1; i += 0.001) {
-          back_leftAsDcMotor.setPower(i);
+          frontright.setPower(i);
         }
       }
     }
