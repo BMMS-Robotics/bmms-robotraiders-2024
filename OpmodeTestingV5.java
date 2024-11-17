@@ -122,10 +122,10 @@ public class OpmodeTestingV5 extends LinearOpMode {
                 SLIDE_MAX = 10845;
             }
             if(gamepad2.right_bumper){
-                pivot.setTargetPosition(PIVOT_MAX);
+                pivotMotor.setTargetPosition(PIVOT_MAX);
             }
             if(gamepad2.left_bumper){
-                pivot.setTargetPosition(0);
+                pivotMotor.setTargetPosition(0);
             }
             // Telemetry updates
             telemetry.addData("Status", "Running");
