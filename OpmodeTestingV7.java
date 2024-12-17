@@ -6,8 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name="OpmodeTestingV9")
-public class OpmodeTestingV9 extends LinearOpMode {
+@TeleOp(name="OpmodeTestingV7")
+public class OpmodeTestingV7 extends LinearOpMode {
     // Drive motors
     private DcMotor frontleft = null;
     private DcMotor frontright = null;
@@ -21,11 +21,11 @@ public class OpmodeTestingV9 extends LinearOpMode {
 
     // Constants
     private static final int SLIDE_HOME = 0;
-    private static int SLIDE_MAX = 2800;
+    private static int SLIDE_MAX = 8000;
     private static final int SLIDE_SPEED = 20; // Reduced for more precise control
     
-    private static final int PIVOT_HOME = 0;
-    private static final int PIVOT_MAX = 1099; // Added defined max for pivot
+    private static final int PIVOT_HOME = -2025;
+    private static final int PIVOT_MAX = 0;
     private static final int PIVOT_SPEED = 7;
 
     private static final double SERVO_INCREMENT = 0.01;
@@ -35,13 +35,15 @@ public class OpmodeTestingV9 extends LinearOpMode {
     // Current position trackers
     private int currentSlidePosition = 0;
     private int currentPivotPosition = 0;
-    private double multipler = 1.0; // Initialize multipler to prevent potential null issues
     
     // Deadzone for joysticks
     private static final double STICK_DEADZONE = 0.1; // Increased deadzone for more stable control
     
     private double applyDeadzone(double value) {
-        return (Math.abs(value) < STICK_DEADZONE) ? 0 : value;
+        if (Math.abs(value) < STICK_DEADZONE) {
+            return 0;
+        }
+        return value;
     }
 
     @Override
@@ -84,7 +86,6 @@ public class OpmodeTestingV9 extends LinearOpMode {
 
         waitForStart();
         pivotMotor.setPower(0.5);
-        double num;
         while (opModeIsActive()) {
             // Drive controls
             double y = -gamepad1.left_stick_y;
@@ -108,6 +109,18 @@ public class OpmodeTestingV9 extends LinearOpMode {
             backleft.setPower(backleftPower * sensitivity);
             frontright.setPower(frontrightPower * sensitivity);
             backright.setPower(backrightPower * sensitivity);
+
+            // Improved Slide Control
+            if (Math.abs(slideInput) > 0.1) {
+                // Dynamic slide position update
+                currentSlidePosition += (int)(slideInput * SLIDE_SPEED);
+                currentSlidePosition = Math.max(SLIDE_HOME, Math.min(currentSlidePosition, SLIDE_MAX));
+                slide.setTargetPosition(currentSlidePosition);
+                slide.setPower(Math.min(Math.abs(slideInput), 1.0)); // Cap power at 1.0
+            } else {
+                // Immediately stop slide when joystick is neutral
+                slide.setPower(0);
+            }
             
             // Pivot Motor Control
             currentPivotPosition += (int)(pivotInput * PIVOT_SPEED);
@@ -124,8 +137,8 @@ public class OpmodeTestingV9 extends LinearOpMode {
             clawservo.setPosition(servoPosition);
 
             // Additional position-based logic
-            if (currentPivotPosition >= 100) {
-                SLIDE_MAX = 4540;
+            if (currentPivotPosition >= -2000) {
+                SLIDE_MAX = 2300;
             }
             
             // Quick pivot position presets
@@ -135,38 +148,16 @@ public class OpmodeTestingV9 extends LinearOpMode {
             if (gamepad2.left_bumper) {
                 pivotMotor.setTargetPosition(0);
             }
-            int hoz = 1062;
+            int hoz = 926;
             int piv =  -currentPivotPosition - hoz;
-            double deg = piv * (65.0/1099.0);
-            double startlength = 13.5;
-            double legnth = 0.01278*currentSlidePosition + 13.5;
-            if (servoPosition == 0.5){
-                legnth += 3;
-            }
+            double deg = piv * (63/1099);
             
-            // Improved Slide Control
-            if (Math.abs(slideInput) > 0.1) {
-                num = 4540 - Math.abs(deg)*1740;
-                multipler += slideInput/10;
-                double targetPosition = num*multipler;
-                
-                // Set target and power
-                slide.setTargetPosition((int)targetPosition);
-                slide.setPower(Math.abs(slideInput));
-                
-                // Update current position
-                currentSlidePosition = (int)targetPosition;
-            } else {
-                // Hold current position when joystick is neutral
-                slide.setTargetPosition(currentSlidePosition);
-                slide.setPower(0.3); // Low hold power to maintain position
-            }
             // Telemetry updates
             telemetry.addData("Status", "Running");
             telemetry.addData("Drive Motors", "FL(%.2f) FR(%.2f) BL(%.2f) BR(%.2f)",
                 frontleftPower, frontrightPower, backleftPower, backrightPower);
             telemetry.addData("Pivot position", currentPivotPosition);
-            telemetry.addData("slide", legnth);
+            telemetry.addData("angle", deg);
             telemetry.addData("Slide position", currentSlidePosition);
             telemetry.addData("Servo Position", "%.2f", servoPosition);
             telemetry.update();

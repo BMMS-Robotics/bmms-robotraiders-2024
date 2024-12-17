@@ -6,8 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name="OpmodeTestingV9")
-public class OpmodeTestingV9 extends LinearOpMode {
+@TeleOp(name="OpmodeTestingV8")
+public class OpmodeTestingV8 extends LinearOpMode {
     // Drive motors
     private DcMotor frontleft = null;
     private DcMotor frontright = null;
@@ -24,8 +24,8 @@ public class OpmodeTestingV9 extends LinearOpMode {
     private static int SLIDE_MAX = 2800;
     private static final int SLIDE_SPEED = 20; // Reduced for more precise control
     
-    private static final int PIVOT_HOME = 0;
-    private static final int PIVOT_MAX = 1099; // Added defined max for pivot
+    private static final int PIVOT_HOME = -2242;
+    private static final int PIVOT_MAX = 0;
     private static final int PIVOT_SPEED = 7;
 
     private static final double SERVO_INCREMENT = 0.01;
@@ -35,7 +35,6 @@ public class OpmodeTestingV9 extends LinearOpMode {
     // Current position trackers
     private int currentSlidePosition = 0;
     private int currentPivotPosition = 0;
-    private double multipler = 1.0; // Initialize multipler to prevent potential null issues
     
     // Deadzone for joysticks
     private static final double STICK_DEADZONE = 0.1; // Increased deadzone for more stable control
@@ -84,7 +83,6 @@ public class OpmodeTestingV9 extends LinearOpMode {
 
         waitForStart();
         pivotMotor.setPower(0.5);
-        double num;
         while (opModeIsActive()) {
             // Drive controls
             double y = -gamepad1.left_stick_y;
@@ -108,6 +106,26 @@ public class OpmodeTestingV9 extends LinearOpMode {
             backleft.setPower(backleftPower * sensitivity);
             frontright.setPower(frontrightPower * sensitivity);
             backright.setPower(backrightPower * sensitivity);
+
+            // Improved Slide Control
+            if (Math.abs(slideInput) > 0.1) {
+                // Calculate new target based on current position and input
+                int targetPosition = currentSlidePosition + (int)(slideInput * SLIDE_SPEED);
+                
+                // Constrain the target within valid range
+                targetPosition = Math.max(SLIDE_HOME, Math.min(targetPosition, SLIDE_MAX));
+                
+                // Set target and power
+                slide.setTargetPosition(targetPosition);
+                slide.setPower(Math.abs(slideInput));
+                
+                // Update current position
+                currentSlidePosition = targetPosition;
+            } else {
+                // Hold current position when joystick is neutral
+                slide.setTargetPosition(currentSlidePosition);
+                slide.setPower(0.3); // Low hold power to maintain position
+            }
             
             // Pivot Motor Control
             currentPivotPosition += (int)(pivotInput * PIVOT_SPEED);
@@ -144,23 +162,7 @@ public class OpmodeTestingV9 extends LinearOpMode {
                 legnth += 3;
             }
             
-            // Improved Slide Control
-            if (Math.abs(slideInput) > 0.1) {
-                num = 4540 - Math.abs(deg)*1740;
-                multipler += slideInput/10;
-                double targetPosition = num*multipler;
-                
-                // Set target and power
-                slide.setTargetPosition((int)targetPosition);
-                slide.setPower(Math.abs(slideInput));
-                
-                // Update current position
-                currentSlidePosition = (int)targetPosition;
-            } else {
-                // Hold current position when joystick is neutral
-                slide.setTargetPosition(currentSlidePosition);
-                slide.setPower(0.3); // Low hold power to maintain position
-            }
+            
             // Telemetry updates
             telemetry.addData("Status", "Running");
             telemetry.addData("Drive Motors", "FL(%.2f) FR(%.2f) BL(%.2f) BR(%.2f)",
