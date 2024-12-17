@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 @Autonomous
-public class AutonomousBlueBottom extends LinearOpMode {
+public class AutonomousBlueTop extends LinearOpMode {
     private DcMotor frontright;
     private DcMotor backright;
     private DcMotor frontleft;
@@ -23,7 +23,7 @@ public class AutonomousBlueBottom extends LinearOpMode {
 
         waitForStart();
 
-        right(-1.524);
+        right(1.524);
     }
 
     public void forward(double distance) {
@@ -31,27 +31,26 @@ public class AutonomousBlueBottom extends LinearOpMode {
         double circumference = 0.32673;
         double rotations = distance / circumference;
         double time = rotations * (circumference / speed);
-
-        frontleft.setPower(speed);
-        frontright.setPower(speed);
-        backleft.setPower(speed);
-        backright.setPower(speed);
-
+        time *= 0.51813;
+        frontleft.setPower(-speed);
+        frontright.setPower(-speed);
+        backleft.setPower(-speed);
+        backright.setPower(-speed);
         sleep((long)(time * 1000));
         stopMotors();
     }
 
     public void right(double distance) {
         double speed = 0.5;
-        double circumference = 0.32673;
+        double circumference = 0.301;
         double rotations = distance / circumference;
         double time = rotations * (circumference / speed);
 
-        frontleft.setPower(speed);
-        frontright.setPower(-speed);
-        backleft.setPower(-speed);
-        backright.setPower(speed);
-
+        frontleft.setPower(-speed);
+        frontright.setPower(speed);
+        backleft.setPower(speed);
+        backright.setPower(-speed);
+        time *= 0.83278;
         sleep((long)(time * 1000));
         stopMotors();
     }

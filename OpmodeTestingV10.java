@@ -5,9 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-
-@TeleOp(name="OpmodeTestingV9")
-public class OpmodeTestingV9 extends LinearOpMode {
+@TeleOp(name="OpmodeTestingV10")
+public class OpmodeTestingV10 extends LinearOpMode {
     // Drive motors
     private DcMotor frontleft = null;
     private DcMotor frontright = null;
@@ -24,8 +23,8 @@ public class OpmodeTestingV9 extends LinearOpMode {
     private static int SLIDE_MAX = 2800;
     private static final int SLIDE_SPEED = 20; // Reduced for more precise control
     
-    private static final int PIVOT_HOME = 0;
-    private static final int PIVOT_MAX = 1099; // Added defined max for pivot
+    private static final int PIVOT_HOME = -9999;
+    private static final int PIVOT_MAX = 9999; // Added defined max for pivot
     private static final int PIVOT_SPEED = 7;
 
     private static final double SERVO_INCREMENT = 0.01;
@@ -123,11 +122,9 @@ public class OpmodeTestingV9 extends LinearOpMode {
             }
             clawservo.setPosition(servoPosition);
 
-            // Additional position-based logic
             if (currentPivotPosition >= 100) {
                 SLIDE_MAX = 4540;
             }
-            
             // Quick pivot position presets
             if (gamepad2.right_bumper) {
                 pivotMotor.setTargetPosition(PIVOT_MAX);
@@ -146,16 +143,19 @@ public class OpmodeTestingV9 extends LinearOpMode {
             
             // Improved Slide Control
             if (Math.abs(slideInput) > 0.1) {
-                num = 4540 - Math.abs(deg)*1740;
-                multipler += slideInput/10;
+                // Replace the problematic lines with:
+                num = 4540 - Math.abs(deg)*1740;  // Use Math.abs() instead of abs()
+                if(multipler >= (-1) && multipler <= 1){
+                    multipler += slideInput/10;
+                }
                 double targetPosition = num*multipler;
-                
+
                 // Set target and power
-                slide.setTargetPosition((int)targetPosition);
+                slide.setTargetPosition((int)targetPosition);  // Explicit cast to int
                 slide.setPower(Math.abs(slideInput));
-                
+
                 // Update current position
-                currentSlidePosition = (int)targetPosition;
+                currentSlidePosition = (int)targetPosition;  // Explicit cast to int
             } else {
                 // Hold current position when joystick is neutral
                 slide.setTargetPosition(currentSlidePosition);
