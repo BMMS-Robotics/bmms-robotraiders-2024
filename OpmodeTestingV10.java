@@ -22,7 +22,7 @@ public class OpmodeTestingV10 extends LinearOpMode {
     // Constants
     private static final int SLIDE_HOME = 0;
     private static int SLIDE_MAX = 2800;
-    private static final int SLIDE_SPEED = 10; // Reduced for more precise control
+    private static final int SLIDE_SPEED = 10;
     
     private static final int PIVOT_HOME = -2242;
     private static final int PIVOT_MAX = 0;
@@ -36,8 +36,7 @@ public class OpmodeTestingV10 extends LinearOpMode {
     private int currentSlidePosition = 0;
     private int currentPivotPosition = 0;
     
-    // Deadzone for joysticks
-    private static final double STICK_DEADZONE = 0.1; // Increased deadzone for more stable control
+    private static final double STICK_DEADZONE = 0.1;
     
     private double applyDeadzone(double value) {
         return (Math.abs(value) < STICK_DEADZONE) ? 0 : value;
@@ -53,7 +52,9 @@ public class OpmodeTestingV10 extends LinearOpMode {
         slide = hardwareMap.get(DcMotor.class, "slide");
         pivotMotor = hardwareMap.get(DcMotor.class, "pivot");
         clawservo = hardwareMap.get(Servo.class, "claw-servo");
-        boolean vert = -15;
+        
+        double verticalPosition = -15.0;
+        
         // Set motor directions
         frontleft.setDirection(DcMotorSimple.Direction.REVERSE);
         backleft.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -81,11 +82,12 @@ public class OpmodeTestingV10 extends LinearOpMode {
         double servoPosition = 0.0;
         clawservo.setPosition(servoPosition);
 
-        boolean aButtonPressed = false;  // Track if button was pressed last loop
-        boolean clawOpen = false;       // Track claw state
+        boolean aButtonPressed = false;
+        boolean clawOpen = false;
 
         waitForStart();
         pivotMotor.setPower(0.5);
+        
         while (opModeIsActive()) {
             // Drive controls
             double y = -gamepad1.left_stick_y;
@@ -97,12 +99,12 @@ public class OpmodeTestingV10 extends LinearOpMode {
             double pivotInput = applyDeadzone(gamepad2.right_stick_y);
             
             // Mecanum drive calculations
-            double rotatesensitibvityw = 0.75;
+            double rotateSensitivity = 0.75;
             double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-            double frontleftPower = (y + x + rx*rotatesensitibvityw) / denominator;
-            double backleftPower = (y - x + rx*rotatesensitibvityw) / denominator;
-            double frontrightPower = (y - x - rx*rotatesensitibvityw) / denominator;
-            double backrightPower = (y + x - rx*rotatesensitibvityw) / denominator;
+            double frontleftPower = (y + x + rx * rotateSensitivity) / denominator;
+            double backleftPower = (y - x + rx * rotateSensitivity) / denominator;
+            double frontrightPower = (y - x - rx * rotateSensitivity) / denominator;
+            double backrightPower = (y + x - rx * rotateSensitivity) / denominator;
             
             // Drive motor power with sensitivity
             double sensitivity = 0.75;
@@ -111,30 +113,22 @@ public class OpmodeTestingV10 extends LinearOpMode {
             frontright.setPower(frontrightPower * sensitivity);
             backright.setPower(backrightPower * sensitivity);
             
-            if (vert <= -5) {  // Adjust this threshold as needed
-                if (gamepad2.left_stick_y < 0 || gamepad2.right_stick_y < 0) {
-                    slideInput = 0; // Disable slide downward input
-                    pivotInput = 0; // Disable pivot downward input
+            if (verticalPosition <= -5) {  // Fixed syntax error in comparison
+                if (gamepad2.left_stick_y < 0 || gamepad2.right_stick_y >0) {
+                    slideInput = 0;
+                    pivotInput = 0;
                 }
             }
+            
             // Improved Slide Control
             if (Math.abs(slideInput) > 0.1) {
-                // Calculate new target based on current position and input
                 int targetPosition = currentSlidePosition + (int)(slideInput * SLIDE_SPEED);
-                
-                // Constrain the target within valid range
                 targetPosition = Math.max(SLIDE_HOME, Math.min(targetPosition, SLIDE_MAX));
-                
-                // Set target and power
                 slide.setTargetPosition(targetPosition);
                 slide.setPower(Math.abs(slideInput));
-                
-                // Update current position
                 currentSlidePosition = targetPosition;
             } else {
-                // Hold current position when joystick is neutral
                 slide.setTargetPosition(currentSlidePosition);
-                //slide.setPower(0); // Low hold power to maintain position
             }
             
             // Pivot Motor Control
@@ -144,19 +138,16 @@ public class OpmodeTestingV10 extends LinearOpMode {
             
             // Servo control
             if (gamepad2.a) {
-                if (!aButtonPressed) {  // Only trigger once when button is first pressed
-                    clawOpen = !clawOpen;  // Toggle claw state
-                    servoPosition = clawOpen ? SERVO_MAX_POS : SERVO_MIN_POS;  // Set position based on state
+                if (!aButtonPressed) {
+                    clawOpen = !clawOpen;
+                    servoPosition = clawOpen ? SERVO_MAX_POS : SERVO_MIN_POS;
                 }
                 aButtonPressed = true;
             } else {
-                aButtonPressed = false;  // Reset when button is released
+                aButtonPressed = false;
             }
 
-            clawservo.setPosition(servoPosition);  // Make sure to actually update the servo
-
-            // Additional position-based logic
-
+            clawservo.setPosition(servoPosition);
             
             // Quick pivot position presets
             if (gamepad2.right_bumper) {
@@ -165,21 +156,25 @@ public class OpmodeTestingV10 extends LinearOpMode {
             if (gamepad2.left_bumper) {
                 pivotMotor.setTargetPosition(0);
             }
-            int hoz = 1062;
-            int piv =  -currentPivotPosition - hoz;
-            double deg = piv * (65.0/1099.0);
-            double startlength = 13.5;
-            double legnth = 0.01278*currentSlidePosition + 13.5;
-            if (servoPosition == 0.5){
-                legnth += 3;
-            }
-            vert = legnth*Math.sin((Math.Pi/180)*deg);
-             if (deg <=45) {
-                SLIDE_MAX = 2207;
-            }else{
-                SLIDE_MAX = 3187;
+
+            // Position calculations
+            int horizontalOffset = -831;;
+            int pivotAngle = -currentPivotPosition - horizontalOffset;
+            double degrees = pivotAngle * (65.0/1099.0);
+            double startLength = 13;
+            double length = 0.00704568 * currentSlidePosition + 13.5;
+            
+            if (servoPosition == 0.5) {
+                length += 3;
             }
             
+            verticalPosition = length * Math.sin(Math.toRadians(degrees));  // Fixed Math.PI180 to proper conversion
+            
+            if (degrees <= 45) {
+                SLIDE_MAX = 2207;
+            } else {
+                SLIDE_MAX = 3187;
+            }
             
             // Telemetry updates
             telemetry.addData("Status", "Running");
@@ -189,6 +184,9 @@ public class OpmodeTestingV10 extends LinearOpMode {
             telemetry.addData("Slide position", currentSlidePosition);
             telemetry.addData("Servo Position", "%.2f", servoPosition);
             telemetry.addData("Claw State", clawOpen ? "Open" : "Closed");
+            telemetry.addData("Vertical Position", "%.2f", verticalPosition);
+            telemetry.addData("Degrees", "%.2f", degrees);
+            telemetry.addData("legtnth", "%.2f", length);
             telemetry.update();
         }
     }
