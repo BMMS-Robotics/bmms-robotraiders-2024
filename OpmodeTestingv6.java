@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name="OpmodeTestingV6")
 public class OpmodeTestingV6 extends LinearOpMode {
-    // Drive motors
+    // Drive motorsuhuhuh
     private DcMotor frontleft = null;
     private DcMotor frontright = null;
     private DcMotor backleft = null;
